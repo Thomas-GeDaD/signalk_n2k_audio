@@ -4,7 +4,7 @@
   "description": "a audio server device simulator for work with nmea2000",
   "license": "MIT",
   "homepage": "https://github.com/Thomas-GeDaD/signalk_n2k_audio/blob/master/README.md",
-  "version": "1.0.5",
+  "version": "1.0.0",
   "main": "index.js",
   "keywords": [
     "signalk-node-server-plugin"
