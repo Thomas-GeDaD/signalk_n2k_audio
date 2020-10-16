@@ -1,7 +1,12 @@
+const util = require('util')
+
 module.exports = function (app) {
   var plugin = {};
   var productinformation = "%s,6,126996,12,255,134,34,8,b1,46,45,37,30,33,36,37,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,33,2e,31,31,2e,34,32,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,52,61,79,6d,61,72,69,6e,65,20,41,58,49,4f,4d,20,39,20,52,56,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,30,36,37,30,39,36,37,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,2,1"
   var unsubscribes = [];
+  let timersendPI = null
+  let timerGetData = null
+  var pgnData
 
 
   plugin.id = 'signalk_n2k_audio';
@@ -18,13 +23,25 @@ module.exports = function (app) {
         app.emit(
         'nmea2000out', msg);
         }
-    timersenPI =  setInterval(sendPI,2000)
+    timersendPI =  setInterval ( sendPI , 10000)
 
+
+    app.on('N2KAnalyzerOut', function(e) {
+        if (e.pgn==126720 || e.pgn==130820 || e.pgn==130816 || e.pgn==130820 || e.pgn==60928){ 
+            console.log(e);
+        } 
+      })
+
+
+
+
+
+    /*
     let localSubscription = {
         context: '*', // Get data for all contexts
         subscribe: [{
             path: '*', // Get all paths
-            period: 5000 // Every 5000ms
+            period: 1000 // Every 5000ms
         }]
     };
 
@@ -41,6 +58,7 @@ module.exports = function (app) {
     }
   );
 
+*/
 
 
 
@@ -48,7 +66,7 @@ module.exports = function (app) {
   };
 
   plugin.stop = function () {
-    if (timersenPI) {
+    if (timersendPI) {
     clearInterval(timersenPI)
     }
     app.debug('Plugin stopped');
