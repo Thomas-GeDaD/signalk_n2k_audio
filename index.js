@@ -1,5 +1,8 @@
 module.exports = function (app) {
   var plugin = {};
+  var productinformation = "%s,6,126996,12,255,134,34,8,b1,46,45,37,30,33,36,37,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,33,2e,31,31,2e,34,32,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,52,61,79,6d,61,72,69,6e,65,20,41,58,49,4f,4d,20,39,20,52,56,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,30,36,37,30,39,36,37,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,2,1"
+  var unsubscribes = [];
+
 
   plugin.id = 'signalk_n2k_audio';
   plugin.name = 'signalk_n2k_audio';
@@ -8,16 +11,46 @@ module.exports = function (app) {
   plugin.start = function (options, restartPlugin) {
     // Here we put our plugin logic
     app.debug('Plugin started');
-    function sendhandshake () {
-      app.emit(
-        'nmea2000out',
-        '2017-04-15T14:57:58.468Z,6,126996,	12,255,134,15,	5	2b	0c	55	44	2d	36	35	30	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	32	2e	30	2e	32	36	35	0	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	46	55	53	49	4f	4e	2d	4c	49	4e	4b	2d	31	2e	30	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	37	36	32	32	33	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	20	1	1');
+    
+    function sendPI () {
+        let msg= [util.format(productinformation, (new Date()).toISOString())]
+        console.log (msg)
+        app.emit(
+        'nmea2000out', msg);
+        }
+    timersenPI =  setInterval(sendPI,2000)
+
+    let localSubscription = {
+        context: '*', // Get data for all contexts
+        subscribe: [{
+            path: '*', // Get all paths
+            period: 5000 // Every 5000ms
+        }]
+    };
+
+    app.subscriptionmanager.subscribe(
+        localSubscription,
+        unsubscribes,
+        subscriptionError => {
+            app.error('Error:' + subscriptionError);
+        },
+        delta => {
+        delta.updates.forEach(u => {
+        console.log(u);
+        });
     }
+  );
+
+
+
+
 
   };
 
   plugin.stop = function () {
-    // Here we put logic we need when the plugin stops
+    if (timersenPI) {
+    clearInterval(timersenPI)
+    }
     app.debug('Plugin stopped');
   };
 
@@ -27,3 +60,8 @@ module.exports = function (app) {
 
   return plugin;
 };
+
+///heartbeat: 126993
+//https://github.com/htool/emulateSonicHub4mopidy/blob/195c81c25eaa33d13f7586280af0c36bb3ed3085/emulate.js
+
+//60928 data a 59904
