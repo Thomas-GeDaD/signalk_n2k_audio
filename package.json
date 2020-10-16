@@ -1,19 +1,22 @@
 {
   "name": "signalk_n2k_audio",
-  "author": "Thomas Gersmann / GeDaD",
-  "description": "a audio server device simulator for nmea2000",
-  "license": "MIT",
-  "homepage": "https://github.com/Thomas-GeDaD/signalk_n2k_audio/blob/master/README.md",
   "version": "1.0.0",
+  "description": "a audio server device simulator for nmea2000",
   "main": "index.js",
-  "keywords": [
-    "signalk-node-server-plugin"
-  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Thomas-GeDaD/signalk_n2k_audio.git"
   },
+  "author": "Thomas Gersmann",
+  "license": "ISC",
+   "keywords": [
+    "signalk-node-server-plugin"
+   ]
   "bugs": {
     "url": "https://github.com/Thomas-GeDaD/signalk_n2k_audio/issues"
   },
+  "homepage": "https://github.com/Thomas-GeDaD/signalk_n2k_audio#readme"
 }
