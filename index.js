@@ -75,12 +75,13 @@ module.exports = function(app) {
           this.simpleCan.sendPGN({
             pgn:130573,
             dst: n2k.src,
-            'Play support': 'Bluetooth',
+            'Play support': 'Stop',
+            'Source': 'Bluetooth',
             'Browse support': 'Track name',
             'Thumbs support': 'Yes',
             'Connected':'Yes',
-            'Repeat support': 1,
-            'Shuffle support': 1,
+            'Repeat support': 'Song',
+            'Shuffle support': 'All',
           })
         }
 
