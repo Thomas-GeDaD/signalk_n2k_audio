@@ -4,6 +4,7 @@ const SimpleCan = require('@canboat/canboatjs').SimpleCan
 module.exports = function(app) {
   var plugin = {}
   var unsubscribes = []
+  let timersendCI = null
 
   plugin.id = 'signalk_n2k_audio';
   plugin.name = 'signalk_n2k_audio';
@@ -28,11 +29,11 @@ module.exports = function(app) {
       app,
       canDevice: options.candevice,
       preferredAddress: 35,
-      transmitPGNs: [ 130580, 130573 ],
-      addressClaim: { 
+      transmitPGNs: [ 130580, 130573, 126998 ],
+      addressClaim: {  //60928
         "Unique Number": 139725,
-        "Manufacturer Code": 'Fusion Electronics',
-        "Device Function": 130,
+       // "Manufacturer Code": 'Fusion Electronics',
+        //"Device Function": 130,
         "Device Class": 'Entertainment',
         "Device Instance Lower": 0,
         "Device Instance Upper": 0,
@@ -53,7 +54,7 @@ module.exports = function(app) {
     this.simpleCan.start()
     app.setPluginStatus(`Connected to ${options.candevice}`)
 
-
+//130847
     app.on('N2KAnalyzerOut', (n2k) => {
       if ( n2k.pgn === 59904
            && n2k.dst === this.simpleCan.candevice.address
@@ -68,6 +69,21 @@ module.exports = function(app) {
           'Max favorites':0
         })
       }
+      
+      if (n2k.pgn == 59904
+        && n2k.dst === this.simpleCan.candevice.address
+        && n2k.fields.PGN === 126998
+      ){
+        this.simpleCan.sendPGN({
+          pgn:126998,
+          dst: n2k.src,
+          'Installation Description #1': 'UD-650',
+          'Installation Description #2': 'FUSION',
+          'Installation Description #3': 'Fusion Electronics Ltd',
+        })
+      }
+      
+      
       if (n2k.pgn == 126208
           && n2k.dst === this.simpleCan.candevice.address
           && n2k.fields.PGN === 130573
@@ -93,6 +109,7 @@ module.exports = function(app) {
         console.log("watchdata:")
         console.log(n2k);
       }
+    
     })
   }
 
@@ -101,7 +118,3 @@ module.exports = function(app) {
 
   return plugin
 }
-
-
-/*1589381911969;A;2020-05-13T14:58:31.966Z 6  12 255 126996 Product Information:  NMEA 2000 Version = 1301; Product Code = 3115; Model ID = UD-650; Software Version Code = 2.0.265; Model Version = FUSION-LINK-1.0; Model Serial Code = 76223; Certification Level = 1; Load Equivalency = 1
-*/
