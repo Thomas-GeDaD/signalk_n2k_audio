@@ -5,9 +5,9 @@ module.exports = function(app) {
   var plugin = {}
   var unsubscribes = []
 
-  plugin.id = "signalk-candevice-example-plugin"
-  plugin.name = "Candevice Example"
-  plugin.description = "Candevice Example"
+  plugin.id = 'signalk_n2k_audio';
+  plugin.name = 'signalk_n2k_audio';
+  plugin.description = 'a audio server device simulator fo nmea2000';
 
   plugin.schema = function() {
     return {
@@ -40,13 +40,13 @@ module.exports = function(app) {
         "Industry Group": 'Marine'
       },
       productInfo: { //126996
-        "NMEA 2000 Version": 1300,
-        "Product Code": 667,
+        "NMEA 2000 Version": 1301,
+        "Product Code": 3115,
         "Model ID": "UD-650",
         "Software Version Code": "2.0.265",
         "Model Version": "FUSION-LINK-1.0",
-        "Model Serial Code": "7223",
-        "Certification Level": 0,
+        "Model Serial Code": "76223",
+        "Certification Level": 1,
         "Load Equivalency": 1
       }
     })
@@ -84,7 +84,11 @@ module.exports = function(app) {
           })
         }
 
-      if (n2k.pgn==126720 || n2k.pgn==130820 || n2k.pgn==130816 || n2k.pgn==130820 || n2k.pgn==60928 || n2k.pgn==59904 || n2k.pgn==130530 || n2k.fields.PGN == 130573){  //!!126720 Comand from Plotter?
+      if (n2k.pgn==126720 || n2k.pgn==130820 
+        || n2k.pgn==130816 || n2k.pgn==130820 
+        || n2k.pgn==60928 || n2k.pgn==59904 
+        || n2k.pgn==130530 || n2k.fields.PGN == 130573 
+        || n2k.fields.PGN== 130574){  //!!126720 Comand from Plotter?
         console.log("watchdata:")
         console.log(n2k);
       }
@@ -96,3 +100,7 @@ module.exports = function(app) {
 
   return plugin
 }
+
+
+/*1589381911969;A;2020-05-13T14:58:31.966Z 6  12 255 126996 Product Information:  NMEA 2000 Version = 1301; Product Code = 3115; Model ID = UD-650; Software Version Code = 2.0.265; Model Version = FUSION-LINK-1.0; Model Serial Code = 76223; Certification Level = 1; Load Equivalency = 1
+*/
