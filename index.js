@@ -1,85 +1,98 @@
 const util = require('util')
+const SimpleCan = require('@canboat/canboatjs').SimpleCan
 
-module.exports = function (app) {
-  var plugin = {};
-  var productinformation = "%s,6,126996,12,255,134,34,8,b1,46,45,37,30,33,36,37,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,33,2e,31,31,2e,34,32,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,52,61,79,6d,61,72,69,6e,65,20,41,58,49,4f,4d,20,39,20,52,56,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,30,36,37,30,39,36,37,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff,2,1"
-  var unsubscribes = [];
-  let timersendPI = null
-  let timerGetData = null
-  var pgnData
+module.exports = function(app) {
+  var plugin = {}
+  var unsubscribes = []
 
+  plugin.id = "signalk-candevice-example-plugin"
+  plugin.name = "Candevice Example"
+  plugin.description = "Candevice Example"
 
-  plugin.id = 'signalk_n2k_audio';
-  plugin.name = 'signalk_n2k_audio';
-  plugin.description = 'a audio server device simulator fo nmea2000';
-
-  plugin.start = function (options, restartPlugin) {
-    // Here we put our plugin logic
-    app.debug('Plugin started');
-    
-    function sendPI () {
-        let msg= [util.format(productinformation, (new Date()).toISOString())]
-        console.log (msg)
-        app.emit(
-        'nmea2000out', msg);
+  plugin.schema = function() {
+    return {
+      type: "object",
+      properties: {
+        candevice: {
+          title: "Serial Port",
+          type: "string",
+          default: 'can0'
         }
-    timersendPI =  setInterval ( sendPI , 10000)
-
-
-    app.on('N2KAnalyzerOut', function(e) {
-        if (e.pgn==126720 || e.pgn==130820 || e.pgn==130816 || e.pgn==130820 || e.pgn==60928){ 
-            console.log(e);
-        } 
-      })
-
-
-
-
-
-    /*
-    let localSubscription = {
-        context: '*', // Get data for all contexts
-        subscribe: [{
-            path: '*', // Get all paths
-            period: 1000 // Every 5000ms
-        }]
-    };
-
-    app.subscriptionmanager.subscribe(
-        localSubscription,
-        unsubscribes,
-        subscriptionError => {
-            app.error('Error:' + subscriptionError);
-        },
-        delta => {
-        delta.updates.forEach(u => {
-        console.log(u);
-        });
+      }
     }
-  );
+  }
 
-*/
+  plugin.start = function(options) {
+    
+    this.simpleCan = new SimpleCan({
+      app,
+      canDevice: options.candevice,
+      preferredAddress: 35,
+      transmitPGNs: [ 130580, 130573 ],
+      addressClaim: { 
+        "Unique Number": 139725,
+        "Manufacturer Code": 'Fusion Electronics',
+        "Device Function": 130,
+        "Device Class": 'Entertainment',
+        "Device Instance Lower": 0,
+        "Device Instance Upper": 0,
+        "System Instance": 0,
+        "Industry Group": 'Marine'
+      },
+      productInfo: { //126996
+        "NMEA 2000 Version": 1300,
+        "Product Code": 667,
+        "Model ID": "UD-650",
+        "Software Version Code": "2.0.265",
+        "Model Version": "FUSION-LINK-1.0",
+        "Model Serial Code": "7223",
+        "Certification Level": 0,
+        "Load Equivalency": 1
+      }
+    })
+    this.simpleCan.start()
+    app.setPluginStatus(`Connected to ${options.candevice}`)
 
 
+    app.on('N2KAnalyzerOut', (n2k) => {
+      if ( n2k.pgn === 59904
+           && n2k.dst === this.simpleCan.candevice.address
+           && n2k.fields.PGN === 130580
+         ) {
+        this.simpleCan.sendPGN({
+          pgn:130580,
+          dst: n2k.src,
+          'Power': 'Yes',
+          'Default Setting': 0,
+          'Tuner Regions': 1,
+          'Max favorites':0
+        })
+      }
+      if (n2k.pgn == 126208
+          && n2k.dst === this.simpleCan.candevice.address
+          && n2k.fields.PGN === 130573
+        ){
+          this.simpleCan.sendPGN({
+            pgn:130573,
+            dst: n2k.src,
+            'Play support': 'Bluetooth',
+            'Browse support': 'Track name',
+            'Thumbs support': 'Yes',
+            'Connected':'Yes',
+            'Repeat support': 1,
+            'Shuffle support': 1,
+          })
+        }
 
+      if (n2k.pgn==126720 || n2k.pgn==130820 || n2k.pgn==130816 || n2k.pgn==130820 || n2k.pgn==60928 || n2k.pgn==59904 || n2k.pgn==130530 || n2k.fields.PGN == 130573){  //!!126720 Comand from Plotter?
+        console.log("watchdata:")
+        console.log(n2k);
+      }
+    })
+  }
 
-  };
+  plugin.stop = function() {
+  }
 
-  plugin.stop = function () {
-    if (timersendPI) {
-    clearInterval(timersenPI)
-    }
-    app.debug('Plugin stopped');
-  };
-
-  plugin.schema = {
-    // The plugin schema
-  };
-
-  return plugin;
-};
-
-///heartbeat: 126993
-//https://github.com/htool/emulateSonicHub4mopidy/blob/195c81c25eaa33d13f7586280af0c36bb3ed3085/emulate.js
-
-//60928 data a 59904
+  return plugin
+}
